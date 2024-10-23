@@ -1,4 +1,4 @@
-# Kratos Project Template
+# Kratos 项目模板
 
 ## 安装kratos
 ```
