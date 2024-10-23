@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package api.helloworld.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "test_kratos/api/helloworld/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.helloworld.v1";
+
+service User {
+	rpc CreateUser (CreateUserRequest) returns (CreateUserReply) {
+		option (google.api.http) = {
+      	post: "/user/create"
+		body: "*"
+    };
+	};
+	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply){
+		option (google.api.http) = {
+		post: "/user/update"
+		body: "*"
+    };
+	};
+	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply){
+		option (google.api.http) = {
+		post: "/user/delete"
+		body: "*"
+    };
+	};
+	rpc GetUser (GetUserRequest) returns (GetUserReply){
+		option (google.api.http) = {
+		get: "/user/get"
+    };
+	};
+	rpc ListUser (ListUserRequest) returns (ListUserReply){
+		option (google.api.http) = {
+		post: "/user/list"
+		body: "*"
+    };
+	};
+}
+
+message CreateUserRequest {
+	string name=1;
+	int32 age=2;
+	string email=3;
+	string phone=4;
+}
+message CreateUserReply {
+	string code=1;
+	string msg=2;
+}
+
+message UpdateUserRequest {
+	string user_id=1;
+	string name=2;
+	int32 age=3;
+	string email=4;
+	string phone=5;
+}
+message UpdateUserReply {
+	string code=1;
+	string msg=2;
+}
+
+message DeleteUserRequest {
+	string user_id=1;
+}
+message DeleteUserReply {
+	string code=1;
+	string msg=2;
+}
+
+message GetUserRequest {
+	string user_id=1;
+}
+message GetUserReply {
+	string code=1;
+	string msg=2;
+}
+
+message ListUserRequest {
+	string begin_time=1;
+	string end_time=2;
+}
+message ListUserReply {
+	string code=1;
+	string msg=2;
+}
