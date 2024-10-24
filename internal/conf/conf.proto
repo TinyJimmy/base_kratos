@@ -25,13 +25,6 @@ message Server {
   GRPC grpc = 2;
 }
 
-message Registry {
-  message Etcd {
-    string addr = 1;
-  }
-  Etcd etcd = 1;
-}
-
 message Data {
   message Database {
     string url = 1;
@@ -44,6 +37,12 @@ message Data {
     google.protobuf.Duration read_timeout = 4;
     google.protobuf.Duration write_timeout = 5;
   }
+  message Etcd {
+    string addr = 1;
+    string username = 2;
+    string password = 3;
+  }
   Database database = 1;
   Redis redis = 2;
+  Etcd etcd = 3;
 }

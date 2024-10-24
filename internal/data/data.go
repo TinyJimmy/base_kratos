@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"fmt"
 	"test_kratos/internal/conf"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/go-redis/redis/extra/redisotel"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
+	v3 "go.etcd.io/etcd/client/v3"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,10 +23,30 @@ type Data struct {
 	// TODO wrapped database client
 	mongo *mongo.Client
 	rdb   *redis.Client
+	etcd  *v3.Client
 }
 
 // NewData .
 func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
+	mongoClient, mongoCancel := NewMongoClient(c)
+	log.Info("message:", "connect to the mongo")
+	redisClient, redisCancel := NewRedisClient(c)
+	log.Info("message:", "connect to the redis")
+	etcdClient, etcdCancel := NewEtcdClient(c)
+	log.Info("message:", "connect to the etcd")
+	d := &Data{
+		mongo: mongoClient,
+		rdb:   redisClient,
+		etcd:  etcdClient,
+	}
+	return d, func() {
+		redisCancel()
+		mongoCancel()
+		etcdCancel()
+	}, nil
+}
+
+func NewMongoClient(c *conf.Data) (*mongo.Client, func()) {
 	uri := c.Database.Url
 	num := c.Database.MaxPoolSize
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
@@ -36,8 +56,12 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	if err != nil {
 		panic(err)
 	}
-	log.Info("message", "connect to the data resource")
-	fmt.Println(int(c.Redis.Db))
+	return client, func() {
+		cancel()
+	}
+}
+
+func NewRedisClient(c *conf.Data) (*redis.Client, func()) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:         c.Redis.Addr,
 		DB:           int(c.Redis.Db),
@@ -45,19 +69,22 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 	})
 	rdb.AddHook(redisotel.TracingHook{})
-	d := &Data{
-		mongo: client,
-		rdb:   rdb,
-	}
-	return d, func() {
-		cancel()
-		log.Info("closing the data resources")
-		if err := d.rdb.Close(); err != nil {
+	return rdb, func() {
+		err := rdb.Close()
+		if err != nil {
 			log.Error(err)
 		}
-	}, nil
+	}
 }
 
-func ReloadGameConfig() {
-
+func NewEtcdClient(c *conf.Data) (*v3.Client, func()) {
+	client, err := v3.New(v3.Config{
+		Endpoints: []string{c.Etcd.Addr},
+	})
+	if err != nil {
+		panic(err)
+	}
+	return client, func() {
+		client.Close()
+	}
 }

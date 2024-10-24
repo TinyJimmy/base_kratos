@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package api.helloworld.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "test_kratos/api/helloworld/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.helloworld.v1";
+
+service Activity {
+	rpc GetActivity (GetActivityRequest) returns (GetActivityReply){
+		option (google.api.http) = {
+		get: "/activity/get"
+    };
+	};
+}
+
+message GetActivityRequest {
+	string activity_id=1;
+}
+message ActivityDetail {
+    string activity_id=1;
+    string activity_name=2;
+    string activity_desc=3;
+    string activity_begin_time=4;
+    string activity_end_time=5;
+}
+
+message GetActivityReply {
+	string code=1;
+	string msg=2;
+    ActivityDetail  activity=3;
+}
