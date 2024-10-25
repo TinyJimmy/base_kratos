@@ -18,3 +18,4 @@ data:
     addr: 39.96.116.239:2379
     username: root
     password: root
+    dial_timeout: 3s

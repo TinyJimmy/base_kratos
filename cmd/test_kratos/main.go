@@ -57,6 +57,7 @@ func main() {
 	defer c.Close()
 
 	if err := c.Load(); err != nil {
+		fmt.Println(123123)
 		panic(err)
 	}
 

@@ -16,14 +16,14 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewActivityRepo)
+var ProviderSet = wire.NewSet(NewData, NewUserRepo)
 
 // Data .
 type Data struct {
 	// TODO wrapped database client
-	mongo *mongo.Client
-	rdb   *redis.Client
-	etcd  *v3.Client
+	Mongo *mongo.Client
+	Rdb   *redis.Client
+	Etcd  *v3.Client
 }
 
 // NewData .
@@ -35,9 +35,9 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	etcdClient, etcdCancel := NewEtcdClient(c)
 	log.Info("message:", "connect to the etcd")
 	d := &Data{
-		mongo: mongoClient,
-		rdb:   redisClient,
-		etcd:  etcdClient,
+		Mongo: mongoClient,
+		Rdb:   redisClient,
+		Etcd:  etcdClient,
 	}
 	return d, func() {
 		redisCancel()
@@ -79,10 +79,19 @@ func NewRedisClient(c *conf.Data) (*redis.Client, func()) {
 
 func NewEtcdClient(c *conf.Data) (*v3.Client, func()) {
 	client, err := v3.New(v3.Config{
-		Endpoints: []string{c.Etcd.Addr},
+		Endpoints:   []string{c.Etcd.Addr},
+		DialTimeout: c.Etcd.DialTimeout.AsDuration(),
 	})
 	if err != nil {
 		panic(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	// 测试连接
+	_, err = client.Get(ctx, "nonexistent-key")
+	if err != nil {
+		// 连接etcd集群成功但是无法正常通信（可能是etcd不可达或者网络问题）
+		log.Fatalf("与etcd通信失败: %v", err)
 	}
 	return client, func() {
 		client.Close()

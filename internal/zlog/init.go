@@ -43,12 +43,9 @@ func InitZapLogger() *ZapLogger {
 
 // NewZapLogger return a zap logger.
 func NewZapLogger(encoder zapcore.EncoderConfig, level zap.AtomicLevel, opts ...zap.Option) *ZapLogger {
-	file, _ := os.OpenFile("../../internal/zlog/system.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoder),
-		zapcore.NewMultiWriteSyncer(
-			zapcore.AddSync(file),
-		), level)
+		zapcore.NewConsoleEncoder(encoder),
+		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)), level)
 	zapLogger := zap.New(core, opts...)
 	serviceWriteSyncer := getServiceLogWriter()
 	routerWriteSyncer := getRouterLogWriter()

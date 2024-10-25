@@ -51,7 +51,7 @@ components:
                     type: string
                 msg:
                     type: string
-                activity:
+                body:
                     $ref: '#/components/schemas/ActivityDetail'
         GoogleProtobufAny:
             type: object

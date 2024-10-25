@@ -31,13 +31,15 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUsecase := biz.NewUserUsecase(userRepo, logger)
 	userService := service.NewUserService(userUsecase)
-	activityRepo := data.NewActivityRepo(dataData, logger)
-	activityUsecase := biz.NewActivityUsecase(activityRepo, logger)
+	etcdClient := dataData.Etcd
+	appConfig, cleanup2 := biz.NewEtcdWatchCustomOrigin(etcdClient, logger)
+	activityUsecase := biz.NewActivityUsecase(appConfig, logger)
 	activityService := service.NewActivityService(activityUsecase)
 	grpcServer := server.NewGRPCServer(confServer, userService, activityService, logger)
 	httpServer := server.NewHTTPServer(confServer, userService, activityService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()
+		cleanup2()
 	}, nil
 }

@@ -51,7 +51,7 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 }
 
 func (ar *userRepo) GetUser(ctx context.Context, id string) (*biz.User, error) {
-	userQuery := ar.data.mongo.Database("test_go").Collection("user").FindOne(ctx, bson.M{"_id": id})
+	userQuery := ar.data.Mongo.Database("test_go").Collection("user").FindOne(ctx, bson.M{"_id": id})
 	var result User
 	err := userQuery.Decode(&result)
 	if err != nil {
@@ -65,13 +65,13 @@ func (ar *userRepo) CreateUser(ctx context.Context, user *biz.User) error {
 	data_user := &User{}
 	data_user = data_user.FromBizUser(user)
 	data_user.ID = uuid.New().String()
-	_, err := ar.data.mongo.Database("test_go").Collection("user").
+	_, err := ar.data.Mongo.Database("test_go").Collection("user").
 		InsertOne(ctx, data_user)
 	return err
 }
 
 func (ar *userRepo) UpdateUser(ctx context.Context, id string, user *biz.User) error {
-	_, err := ar.data.mongo.Database("test_go").Collection("user").
+	_, err := ar.data.Mongo.Database("test_go").Collection("user").
 		UpdateOne(ctx, bson.M{"id": id}, bson.M{"$set": user})
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (ar *userRepo) UpdateUser(ctx context.Context, id string, user *biz.User) e
 }
 
 func (ar *userRepo) DeleteUser(ctx context.Context, id string) error {
-	_, err := ar.data.mongo.Database("test_go").Collection("user").
+	_, err := ar.data.Mongo.Database("test_go").Collection("user").
 		DeleteOne(ctx, bson.M{"id": id})
 	return err
 }

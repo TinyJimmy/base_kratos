@@ -30,5 +30,5 @@ message ActivityDetail {
 message GetActivityReply {
 	string code=1;
 	string msg=2;
-    ActivityDetail  activity=3;
+    ActivityDetail  body=3;
 }
